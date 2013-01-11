@@ -53,19 +53,12 @@ class RateLimitError(GAuthifyError):
     """
 
 
-GAUTHIFY_API_KEY = None
-
-
 class GAuthify(object):
-    def __init__(self, api_key=None):
+    def __init__(self, api_key):
         self.access_points = [
             'https://api.gauthify.com/v1/',
             'https://backup.gauthify.com/v1/'
         ]
-        api_key = api_key or GAUTHIFY_API_KEY
-        if not api_key:
-            raise ApiKeyError("No API key provided! Either set GAUTHIFY_API_KEY"
-                              " or pass in init.", 401, '401', '')
         self.headers = {
             'Authorization': api_key,
             'User-Agent': 'GAuthify/v1.00 Python/1.00',
@@ -79,18 +72,17 @@ class GAuthify(object):
             try:
                 req_url = base_url + url_addon
                 req = requests.request(type.lower(), req_url, data=params,
-                                       params=params, headers=self.headers)
+                               params=params, headers=self.headers, timeout=1.5)
                 status_code = req.status_code
                 json_resp = req.json
                 if not isinstance(json_resp, dict) or (req.status_code > 300 and
                                status_code not in [401, 402, 406, 404]):
                     raise requests.ConnectionError
                 break
-            except requests.ConnectionError, e:
+            except requests.RequestException, e:
                 if req_url == self.access_points[-1]:
                     raise ServerError("Communication error with all access"
-                                      "points. Please contact"
-                                      "support@gauthify.com for help.", 500, '500', req.raw)
+                                      "points. Please contact support@gauthify.com for help.", 500, '500', req.raw)
                 continue
         if status_code == 401:
             raise ApiKeyError(json_resp['error_message'], status_code, json_resp['error_code'], req.raw)
@@ -189,33 +181,39 @@ class GAuthify(object):
         print("1) Testing Creating a User...")
         result = self.create_user(account_name,
                                   account_name)
+        print result
         success()
 
         print("2) Retrieving Created User...")
         user = self.get_user(account_name)
-        assert isinstance(result, dict)
+        assert isinstance(user, dict)
+        print user
         success()
 
         print("3) Retrieving All Users...")
         result = self.get_all_users()
         assert isinstance(result, list)
+        print result
         success()
 
         print("4) Bad Auth Code...")
         result = self.check_auth(account_name, '112345')
         assert isinstance(result, bool)
+        print result
         success()
 
         print("5) Testing one time pass (OTP)....")
         result = self.check_auth(account_name, user['otp'])
         assert isinstance(result, bool)
+        print result
         if not result:
             raise ParameterError('Server error. OTP not working. Contact '
-                                 'support@gauthify.com for help.')
+                                 'support@gauthify.com for help.', 500, '500', '')
         success()
         if test_email:
             print("5A) Testing email to {}".format(test_email))
-            self.send_email(account_name, test_email)
+            result = self.send_email(account_name, test_email)
+            print result
             success()
         if test_number:
             print("5B) Testing SMS to {}".format(test_number))
@@ -224,16 +222,19 @@ class GAuthify(object):
         print("6) Detection of provided auth...")
         result = self.get_user(account_name, 'test12')
         assert result['provided_auth']
+        print result
         success()
 
         print("7) Deleting Created User...")
         result = self.delete_user(account_name)
-        assert isinstance(result, basestring)
+        assert isinstance(result, bool)
+        print result
         success()
 
         print("8) Testing backup server...")
-        self.access_points[0] = 'https://blah.gauthify.com'
-        self.get_all_users()
-        self.access_points[0] = 'https://api.gauthify.com'
+        self.access_points[0] = 'https://blah.gauthify.com/v1/'
+        result = self.get_all_users()
+        self.access_points[0] = 'https://api.gauthify.com/v1/'
+        print result
         success()
 

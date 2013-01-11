@@ -15,6 +15,10 @@ Or download package, cd in the directory:
 
     python setup.py install
 
+To run a quick test to make sure everything works fine run:
+
+    from gauthify import GAuthify
+    GAuthify(<api_key>).quick_test(<test_email>(optional), <test_number>(optional))
 
 Usage
 --------------
@@ -91,6 +95,8 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
 Errors
 --------------
 The primary error class is GAuthifyError, it can be used as follows:
+
+    from gauthify import GAuthifyError
 
     try:
         <code here>

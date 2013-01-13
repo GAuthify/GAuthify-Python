@@ -3,6 +3,7 @@ import requests
 class GAuthifyError(Exception):
     """All Errors"""
     def __init__(self, msg, http_status, error_code, response_body):
+        super(GAuthifyError, self).__init__(msg)
         self.msg = msg
         self.http_status = http_status
         self.error_code = error_code
@@ -28,16 +29,6 @@ class NotFoundError(GAuthifyError):
     Raised when a result isn't found for the parameters provided.
     """
     pass
-
-
-class ConnectionError(GAuthifyError):
-    """
-    Raised when couldn't connect to GAuthify.com. Check firewalls and other
-    things that could effect your network connection. Its a good idea to
-    accept 2nd factor authentication during times when this happens.
-    """
-    pass
-
 
 class ServerError(GAuthifyError):
     """
@@ -75,12 +66,12 @@ class GAuthify(object):
                                params=params, headers=self.headers, timeout=1.5)
                 status_code = req.status_code
                 json_resp = req.json
-                if not isinstance(json_resp, dict) or (req.status_code > 300 and
+                if not isinstance(json_resp, dict) or (status_code > 400 and
                                status_code not in [401, 402, 406, 404]):
                     raise requests.ConnectionError
                 break
             except requests.RequestException, e:
-                if req_url == self.access_points[-1]:
+                if base_url == self.access_points[-1]:
                     raise ServerError("Communication error with all access"
                                       "points. Please contact support@gauthify.com for help.", 500, '500', req.raw)
                 continue
@@ -160,7 +151,7 @@ class GAuthify(object):
 
     def send_email(self, unique_id, email):
         """
-        Sends text message to phone number with the one time auth_code
+        Sends email with the one time auth_code
         """
 
         url_addon = "users/{}/".format(unique_id)
@@ -237,4 +228,5 @@ class GAuthify(object):
         self.access_points[0] = 'https://api.gauthify.com/v1/'
         print result
         success()
+
 

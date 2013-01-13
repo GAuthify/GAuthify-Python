@@ -25,16 +25,12 @@ Usage
 ####Initiate:####
 First get an API key by signing up for an account [here](http://www.gauthify.com).
 
-There are two ways to create a GAuthify object:
+First instantiate a GAuthify object:
 
     from gauthify import GAuthify
     auth_instance = GAuthify(<api_key>)
 
-or
 
-    from gauthify import GAuthify
-    GAUTHIFY_API_KEY = <api_key>
-    auth_instance = GAuthify()
 
 
 ####Create User:####
@@ -66,14 +62,14 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
 * Returns: User hash or raises Error
 
-####Check Authcode:####
+####Check Auth Code:####
 
     auth_instance.check_auth(<unique_id>, <auth_code>, safe_mode = False)
 
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
 * auth_code: Code retrieved from Google Authenticator, SMS, EMail, or OTP
-* safe_mode: If set to true, all exceptions during the request will be suppresed and the check will return True. This essentially temporary bypasses 2-factor authentication if there is a unusualy server error.
-* Retrun: True/False (bool) or raises Error
+* safe_mode: If set to true, all exceptions during the request will be suppressed and the check will return True. This essentially temporary bypasses 2-factor authentication if there is a unusualy server error.
+* Return: True/False (bool) or raises Error
 
 
 ####Send SMS:####
@@ -100,7 +96,7 @@ The primary error class is GAuthifyError, it can be used as follows:
 
     try:
         <code here>
-    exept GAuthifyError as e:
+    except GAuthifyError as e:
         print e.msg # The error message
         print e.http_status # The http status code
         print e.error_code # A error code listed in the GAuthfiy application
@@ -110,5 +106,6 @@ The following errors extend GAuthifyError:
 
 * ApiKeyError - Wraps 401 responses (api key issues)
 * RateLimitError - Wraps 402 responses (Plan limits, etc)
-* ParamaterError - Wraps 406 response (Bad formated unique_id, sms, phone number ,etc)
+* ParameterError - Wraps 406 response (Bad formatted unique_id, sms, phone number ,etc)
 * NotFoundError - Wraps 404 error (requesting a unique_id that doesnt exist)
+* ServerError - Wraps 500 and other server errors

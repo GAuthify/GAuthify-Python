@@ -31,17 +31,30 @@ First instantiate a GAuthify object:
     auth_instance = GAuthify(<api_key>)
 
 
-
-
 ####Create User:####
 
-    auth_instance.create_user(<unique_id>, <display_name>)
+    auth_instance.create_user(<unique_id>, <display_name>, <email> *optional, <phone_number> *optional, <meta> *optional)
 
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
 * display_name: Name that will be displayed on the library
+* phone_number: A valid mobile phone number for sms (Currently US only!)
+* email: A valid email
+* meta: A dictionary of key/value pairs to be added to meta data
 * Returns: The user hash or raises Error
 
 The user hash returned will have paramaters outlined on the GAuthify.com dashboard page. You can show the user the QR code to scan in their google authenticator applicatoin or you can link/iframe the instructions url.
+
+####Update User:####
+
+    auth_instance.update_user(<unique_id>, <email> *optional, <phone_number> *optional, <meta> *optional)
+
+* unique_id: An id to identify user. Could be the PK used for the user in your db.
+* display_name: Name that will be displayed on the library
+* phone_number: A valid mobile phone number for sms (Currently US only!)
+* email: A valid email
+* meta: A dictionary of key/value pairs to be added to meta data
+* Returns: The updated user hash or raises Error
+
 
 ####Delete User:####
 
@@ -62,6 +75,13 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
 * Returns: User hash or raises Error
 
+####Get User By Token:####
+
+    auth_instance.get_user_by_token(<token>)
+
+* token: A 35 char token that starts with gat given by ezAuth.
+* Returns: User hash or raises Error
+
 ####Check Auth Code:####
 
     auth_instance.check_auth(<unique_id>, <auth_code>, safe_mode = False)
@@ -77,7 +97,7 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
     auth_instance.send_sms(<unique_id>, <phone_number>)
 
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
-* phone_number: A valid phone number (Currently US only!)
+* phone_number: A valid us phone number for sms(Currently US only!)
 * Returns: User hash or raises Error
 
 ####Send Email:####

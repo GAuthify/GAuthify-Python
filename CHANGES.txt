@@ -1,0 +1,11 @@
+v1.20, 01/13/2013 -- Fixes and Additions.
+    1) Fixed Server Error
+    2) Create user can now set email, phone_number and meta params
+    3) Update user method to: update email. update phone_number, update meta, and reset key
+    4) Added get_user_by_token method
+    5) send_sms and send_email methods now have optional email params in case they are already set, will throw error if they aren't
+    6) Added tests to quick_tests to try out new features
+    7) Added CHANGES.txt
+    8) Fixed typo in license
+    9) Updated Readme
+v1.01, 01/13/2013 -- Initial release.

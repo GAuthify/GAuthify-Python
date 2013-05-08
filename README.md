@@ -1,6 +1,7 @@
 GAuthify-Python
 ===============
-This is the python API Client for [GAuthify](http://www.gauthify.com). The GAuthify REST api helps websites quickly add multi-factor authentication through Google Authenticator, SMS, and Email. This package is a simple wrapper around that api.
+[Direct link to library](https://github.com/GAuthify/GAuthify-Python)
+This is the python API Client for [GAuthify](https://www.gauthify.com). The GAuthify REST api helps websites quickly add multi-factor authentication through Google Authenticator, SMS, and Email. This package is a simple wrapper around that api.
 
 
 Installation
@@ -46,13 +47,14 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
 
 ####Update User:####
 
-    auth_instance.update_user(<unique_id>, <email> *optional, <phone_number> *optional, <meta> *optional)
+    auth_instance.update_user(<unique_id>, email=None, phone_number=None, meta=None, reset_key=None)
 
 * unique_id: An id to identify user. Could be the PK used for the user in your db.
 * display_name: Name that will be displayed on the library
 * phone_number: A valid mobile phone number for sms (Currently US only!)
 * email: A valid email
 * meta: A dictionary of key/value pairs to be added to meta data
+* reset_key: If set to any in ['true' ,'t', '1'] the Google Authenticator secret key will be reset to a new one.
 * Returns: The updated user hash or raises Error
 
 

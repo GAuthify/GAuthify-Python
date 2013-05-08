@@ -211,6 +211,14 @@ class GAuthify(object):
             'get', url_addon=url_addon)
 
 
+    def api_errors(self):
+        """
+        Returns dictionary containing api errors.
+        """
+        url_addon = "errors/"
+        return self.request_handler(
+            'get', url_addon=url_addon)
+
     def quick_test(self, test_email=None, test_number=None):
         """
         Runs initial tests to make sure everything is working fine

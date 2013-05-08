@@ -110,6 +110,12 @@ The user hash returned will have paramaters outlined on the GAuthify.com dashboa
 
 Errors
 --------------
+Up to-date json formated errors can be grabbed from the server using:
+
+    auth_instance.api_errors()
+
+They should rarely change and will be backward compatible.
+
 The primary error class is GAuthifyError, it can be used as follows:
 
     from gauthify import GAuthifyError

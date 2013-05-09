@@ -57,7 +57,7 @@ class GAuthify(object):
         ]
         self.headers = {
             'Authorization': api_key,
-            'User-Agent': 'GAuthify/v1.00 Python/1.00',
+            'User-Agent': 'GAuthify/v1.25 Python/1.25',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):
@@ -100,7 +100,7 @@ class GAuthify(object):
 
 
     def create_user(self, unique_id, display_name, email=None,
-                    phone_number=None, meta=None):
+                    phone_number=None):
         """
         Creates new user with a new secret key or resets if already exists
         """
@@ -109,8 +109,6 @@ class GAuthify(object):
             params['email'] = email
         if phone_number:
             params['phone_number'] = phone_number
-        if meta:
-            params['meta'] = json.dumps(meta)
         url_addon = "users/{}/".format(unique_id)
         return self.request_handler(
             'post', url_addon=url_addon, params=params)
@@ -177,7 +175,7 @@ class GAuthify(object):
 
     def get_user_by_token(self, token):
         """
-        Returns a single user by ezAuth token
+        Returns a single user by ezGAuth token
         """
         url_addon = "token/{}/".format(token)
         return self.request_handler(
@@ -306,7 +304,7 @@ class GAuthify(object):
         self.access_points[0] = 'https://blah.gauthify.com/v1/'
         result = self.get_all_users()
         self.access_points[0] = current
-        print result
+        print(result)
         success()
 
 

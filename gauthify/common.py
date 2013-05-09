@@ -57,7 +57,7 @@ class GAuthify(object):
         ]
         self.headers = {
             'Authorization': api_key,
-            'User-Agent': 'GAuthify/v1.26',
+            'User-Agent': 'GAuthify-Python/v1.27',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):
@@ -102,7 +102,7 @@ class GAuthify(object):
     def create_user(self, unique_id, display_name, email=None,
                     phone_number=None):
         """
-        Creates new user with a new secret key or resets if already exists
+        Creates new user (replaces with new if already exists)
         """
         params = {'display_name': display_name}
         if email:
@@ -240,7 +240,7 @@ class GAuthify(object):
         print("2) Retrieving Created User...")
         user = self.get_user(account_name)
         assert isinstance(user, dict)
-        print(result)
+        print(user)
         success()
 
         print("3) Retrieving All Users...")

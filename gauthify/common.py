@@ -57,7 +57,7 @@ class GAuthify(object):
         ]
         self.headers = {
             'Authorization': api_key,
-            'User-Agent': 'GAuthify/v1.25 Python/1.25',
+            'User-Agent': 'GAuthify/v1.26',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):

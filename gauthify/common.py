@@ -57,7 +57,7 @@ class GAuthify(object):
         ]
         self.headers = {
             'Authorization': api_key,
-            'User-Agent': 'GAuthify-Python/v1.27',
+            'User-Agent': 'GAuthify-Python/v1.271',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):
@@ -70,7 +70,7 @@ class GAuthify(object):
                 req_url = base_url + url_addon
                 req = requests.request(type.lower(), req_url, data=params,
                                        params=params, headers=self.headers,
-                                       timeout=1.5)
+                                       timeout=5)
                 status_code = req.status_code
                 json_resp = req.json
                 if not isinstance(json_resp, dict) or (status_code > 400 and

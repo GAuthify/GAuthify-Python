@@ -1,3 +1,8 @@
+v2.00, 10/04/2013 -- Major Update
+    1) Users post now takes voice_number, sms_number and meta
+    2) Users put now takes voice_number, sms_number and meta
+    3) Send voice method added
+    4) New server addresses.
 v1.20, 01/13/2013 -- Fixes and Additions.
     1) Fixed Server Error
     2) Create user can now set email, phone_number and meta params

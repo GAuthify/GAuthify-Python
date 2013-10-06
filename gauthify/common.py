@@ -1,5 +1,6 @@
 import requests
 import json
+import base64
 
 
 class GAuthifyError(Exception):
@@ -33,6 +34,11 @@ class NotFoundError(GAuthifyError):
     """
     pass
 
+class ConflictError(GAuthifyError):
+    """
+    Raised when a conflicting result exists (e.g post an existing user)
+    """
+    pass
 
 class ServerError(GAuthifyError):
     """
@@ -52,12 +58,13 @@ class RateLimitError(GAuthifyError):
 class GAuthify(object):
     def __init__(self, api_key):
         self.access_points = [
-            'https://api.gauthify.com/v1/',
-            'https://backup.gauthify.com/v1/'
+            'https://alpha.gauthify.com/v1/',
+            'https://beta.gauthify.com/v1/'
         ]
         self.headers = {
-            'Authorization': api_key,
-            'User-Agent': 'GAuthify-Python/v1.271',
+            'Authorization': 'Basic {}'.format(
+                base64.b64encode(':{}'.format(api_key))),
+            'User-Agent': 'GAuthify-Python/v2.0',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):
@@ -74,7 +81,10 @@ class GAuthify(object):
                 status_code = req.status_code
                 json_resp = req.json
                 if not isinstance(json_resp, dict) or (status_code > 400 and
-                                status_code not in [401, 402, 406, 404]):
+                                                               status_code
+                                                           not in [
+                                                               401, 402, 406,
+                                                               404, 409]):
                     raise requests.ConnectionError
                 break
             except requests.RequestException, e:
@@ -96,34 +106,43 @@ class GAuthify(object):
         elif status_code == 404:
             raise NotFoundError(json_resp['error_message'], status_code,
                                 json_resp['error_code'], req.raw)
+        elif status_code == 409:
+            raise ConflictError(json_resp['error_message'], status_code,
+                                json_resp['error_code'], req.raw)
         return json_resp.get('data')
 
 
     def create_user(self, unique_id, display_name, email=None,
-                    phone_number=None):
+                    sms_number=None, voice_number=None, meta=None):
         """
-        Creates new user (replaces with new if already exists)
+        Creates new user
         """
-        params = {'display_name': display_name}
+        params = {'unique_id': unique_id, 'display_name': display_name}
+        if meta:
+            params['meta'] = json.dumps(meta)
         if email:
             params['email'] = email
-        if phone_number:
-            params['phone_number'] = phone_number
-        url_addon = "users/{}/".format(unique_id)
+        if sms_number:
+            params['sms_number'] = sms_number
+        if voice_number:
+            params['voice_number'] = voice_number
+        url_addon = "users/"
         return self.request_handler(
             'post', url_addon=url_addon, params=params)
 
 
-    def update_user(self, unique_id, email=None, phone_number=None, meta=None,
-                    reset_key=False):
+    def update_user(self, unique_id, email=None, sms_number=None,
+                    voice_number=None, meta=None, reset_key=False):
         """
         Updates user information
         """
         params = {}
         if email:
             params['email'] = email
-        if phone_number:
-            params['phone_number'] = phone_number
+        if sms_number:
+            params['sms_number'] = sms_number
+        if voice_number:
+            params['voice_number'] = voice_number
         if meta:
             params['meta'] = json.dumps(meta)
         if reset_key:
@@ -145,12 +164,11 @@ class GAuthify(object):
         """
         return self.request_handler('get', url_addon='users/')
 
-    def get_user(self, unique_id, auth_code=None):
+    def get_user(self, unique_id):
         """
-        Returns a single user, checks the auth_code if provided
+        Returns a single user
         """
         url_addon = "users/{}/".format(unique_id)
-        url_addon += 'check/{}/'.format(auth_code) if auth_code else ''
         return self.request_handler(
             'get', url_addon=url_addon)
 
@@ -160,11 +178,10 @@ class GAuthify(object):
         Checks auth_coded returns True/False depending on correctness.
         """
         try:
-            response = self.get_user(unique_id, auth_code)
-            if not response['provided_auth']:
-                raise ParameterError(
-                    'auth_code not detected by server. Check if '
-                    'params sent via get request.', '500', '', '')
+            url_addon = 'check/'
+            params = {'auth_code': auth_code, 'unique_id': unique_id}
+            response = self.request_handler('post', url_addon=url_addon,
+                                            params=params)
             return response['authenticated']
         except GAuthifyError, e:
             if safe_mode:
@@ -177,37 +194,46 @@ class GAuthify(object):
         """
         Returns a single user by ezGAuth token
         """
-        url_addon = "token/{}/".format(token)
+        url_addon = "token/"
+        params = {'token': token}
         return self.request_handler(
-            'get', url_addon=url_addon)
+            'post', url_addon=url_addon, params=token)
 
 
-    def send_sms(self, unique_id, phone_number=None):
+    def send_sms(self, unique_id, sms_number=None):
         """
         Sends text message to phone number with the one time auth_code
         """
 
-        url_addon = "users/{}/".format(unique_id)
-        if phone_number:
-            url_addon += 'sms/{}/'.format(phone_number)
-        else:
-            url_addon += 'sms/'
+        url_addon = "sms/".format(unique_id)
+        params = {'unique_id': unique_id}
+        if sms_number:
+            params['sms_number'] = sms_number
         return self.request_handler(
-            'get', url_addon=url_addon)
+            'post', url_addon=url_addon, params=params)
 
 
     def send_email(self, unique_id, email=None):
         """
         Sends email with the one time auth_code
         """
-        url_addon = "users/{}/".format(unique_id)
+        url_addon = "email/".format(unique_id)
+        params = {'unique_id': unique_id}
         if email:
-            url_addon += 'email/{}/'.format(email)
-        else:
-            url_addon += 'email/'
+            params['email'] = email
         return self.request_handler(
-            'get', url_addon=url_addon)
+            'post', url_addon=url_addon, params=params)
 
+    def send_voice(self, unique_id, voice_number=None):
+        """
+        Calls voice_number with the one time auth_code
+        """
+        url_addon = "voice/".format(unique_id)
+        params = {'unique_id': unique_id}
+        if voice_number:
+            params['voice_number'] = voice_number
+        return self.request_handler(
+            'post', url_addon=url_addon, params=params)
 
     def api_errors(self):
         """
@@ -217,23 +243,30 @@ class GAuthify(object):
         return self.request_handler(
             'get', url_addon=url_addon)
 
-    def quick_test(self, test_email=None, test_number=None):
+    def quick_test(self, test_email=None, test_sms_number=None,
+                   test_voice_number=None):
         """
         Runs initial tests to make sure everything is working fine
         """
         account_name = 'testuser@gauthify.com'
-
+        # Setup
+        try:
+             self.delete_user(account_name)
+        except NotFoundError:
+            pass
         def success():
             print("Success \n")
 
         print("1) Testing Creating a User...")
         result = self.create_user(account_name,
                                   account_name, email='firsttest@gauthify.com',
-                                  phone_number='0123456789')
+                                  sms_number='9162627232',
+                                  voice_number='9162627234')
         assert result['unique_id'] == account_name
         assert result['display_name'] == account_name
         assert result['email'] == 'firsttest@gauthify.com'
-        assert result['phone_number'] == '0123456789'
+        assert result['sms_number'] == '+19162627232'
+        assert result['voice_number'] == '+19162627234'
         print(result)
         success()
 
@@ -269,42 +302,37 @@ class GAuthify(object):
             result = self.send_email(account_name, test_email)
             print(result)
             success()
-        if test_number:
-            print("5B) Testing SMS to {}".format(test_number))
-            self.send_sms(account_name, test_number)
+        if test_sms_number:
+            print("5B) Testing SMS to {}".format(test_sms_number))
+            self.send_sms(account_name, test_sms_number)
             success()
-        print("6) Detection of provided auth...")
-        result = self.get_user(account_name, 'test12')
-        assert result['provided_auth']
-        print(result)
-        success()
-
-        print("7) Testing updating email, phone, and meta")
+        if test_voice_number:
+            print("5C) Testing Voice to {}".format(test_voice_number))
+            self.send_voice(account_name, test_voice_number)
+            success()
+        print("6) Testing updating email, phone, and meta")
         result = self.update_user(account_name, email='test@gauthify.com',
-                                  phone_number='1234567890', meta={'a': 'b'})
+                                  sms_number='9162627232', meta={'a': 'b'})
         assert result['email'] == 'test@gauthify.com'
-        assert result['phone_number'] == '1234567890'
+        assert result['sms_number'] == '+19162627232'
         assert result['meta']['a'] == 'b'
         current_key = result['key']
         success()
 
-        print("8) Testing key/secret")
+        print("7) Testing key/secret")
         result = self.update_user(account_name, reset_key=True)
         print(current_key, result['key'])
         assert result['key'] != current_key
         success()
 
-        print("9) Deleting Created User...")
+        print("8) Deleting Created User...")
         result = self.delete_user(account_name)
-        assert isinstance(result, bool)
         success()
 
-        print("10) Testing backup server...")
+        print("9) Testing backup server...")
         current = self.access_points[0]
         self.access_points[0] = 'https://blah.gauthify.com/v1/'
         result = self.get_all_users()
         self.access_points[0] = current
         print(result)
         success()
-
-

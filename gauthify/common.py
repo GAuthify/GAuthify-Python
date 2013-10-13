@@ -64,7 +64,7 @@ class GAuthify(object):
         self.headers = {
             'Authorization': 'Basic {}'.format(
                 base64.b64encode(':{}'.format(api_key))),
-            'User-Agent': 'GAuthify-Python/v2.0',
+            'User-Agent': 'GAuthify-Python/v2.01',
         }
 
     def request_handler(self, type, url_addon='', params=None, **kwargs):
@@ -197,7 +197,7 @@ class GAuthify(object):
         url_addon = "token/"
         params = {'token': token}
         return self.request_handler(
-            'post', url_addon=url_addon, params=token)
+            'post', url_addon=url_addon, params=params)
 
 
     def send_sms(self, unique_id, sms_number=None):

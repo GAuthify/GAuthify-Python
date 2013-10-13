@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='gauthify',
-      version='2.00',
+      version='2.01',
       description='API library for GAuthify.com (Google Authenticator, SMS, email multi factor authentication).',
       url='https://www.gauthify.com',
       author='GAuthify',

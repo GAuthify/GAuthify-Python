@@ -80,6 +80,9 @@ class GAuthify(object):
                                        timeout=5)
                 status_code = req.status_code
                 json_resp = req.json
+                # Fix for requests 2.0:
+                if callable(json_resp):
+                    json_resp = json_resp()
                 if not isinstance(json_resp, dict) or (status_code > 400 and
                                                                status_code
                                                            not in [
